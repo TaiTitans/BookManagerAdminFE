@@ -46,6 +46,7 @@ export default {
         populateTable(data) {
             if (!this.isDataTableInitialized) {
                 this.bookTable = $('#bookTable').DataTable({
+                    responsive: true,
                     data: data.data,
                     columns: [
                         { data: 'MaSach' },
