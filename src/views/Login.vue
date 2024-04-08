@@ -41,7 +41,7 @@
                     type="name"
                     name="name"
                     value=""
-                    v-model="MaDocGia"
+                    v-model="MSNV"
                     placeholder="Tên đăng nhập"
                     required
                   />
@@ -62,7 +62,7 @@
                     class="pl-2 outline-none border-none w-full"
                     type="password"
                     name="password"
-                    v-model="MatKhau"
+                    v-model="Password"
                     placeholder="Mật khẩu"
                     required
                   />
@@ -92,19 +92,6 @@
                 Đăng nhập
               </button>
               <hr />
-              <div class="flex justify-center items-center mt-4">
-                <p
-                  class="inline-flex items-center text-gray-700 font-medium text-xs text-center"
-                >
-                  <span class="ml-2"
-                    >Bạn không có tài khoản?<router-link
-                      to="/register"
-                      class="text-xs ml-2 text-blue-500 font-semibold"
-                      >Đăng ký ngay</router-link
-                    >
-                  </span>
-                </p>
-              </div>
             </div>
           </form>
         </div>
@@ -118,34 +105,33 @@
   export default {
     data() {
       return {
-        MaDocGia: "",
-        MatKhau: "",
+        MSNV: "",
+        Password: "",
         errorMessage: null,
         successMessage: null,
       };
     },
     methods: {
    dangnhap() {
-        if (!this.MaDocGia || !this.MatKhau) {
+        if (!this.MSNV || !this.Password) {
           this.errorMessage = "Vui lòng nhập tên đăng nhập và mật khẩu";
           return;
         }
         const formData = {
-          MaDocGia: this.MaDocGia,
-          MatKhau: this.MatKhau,
+          MSNV: this.MSNV,
+          Password: this.Password,
         };
   
         api
-          .post("/customer/dangnhap", formData)
+          .post("/staff/dangnhap", formData)
           .then((response) => {
             console.log(response);
             const accessToken = response.data.accessToken;
             document.cookie = `accessToken=${accessToken}; path=/; max-age=3600; secure;`;
             localStorage.setItem("isAuthenticated", "true");
-            localStorage.setItem("MaDocGia", response.data.data.customer);
+            localStorage.setItem("MSNV", response.data.data.customer);
             this.successMessage = "Đăng nhập thành công !!";
-           window.location.pathname = "/";
-             router.push({ name: "Home" });
+             router.push({name: 'Books'});
           })
           .catch((error) => {
             console.error(error);

@@ -1,15 +1,17 @@
 <template>
-    <div>
+    <div class="flex max-h-full bg-gray-100 max-w-full">
         <NavBar/>
+<router-view/>
     </div>
 
 </template>
 
 <script>
 import NavBar from '../components/navBar';
+
 export default{
     components:{
-        NavBar
+        NavBar,
     }
 
 }
