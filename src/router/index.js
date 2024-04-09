@@ -4,6 +4,8 @@ import Home from '../views/Home.vue'
 import Books from '../views/Books.vue'
 import Customer from '../views/Customer.vue'
 import Staff from '../views/Staff.vue'
+import Publisher from '../views/Publisher.vue'
+
 const routes = [
   {
     path: '/login',
@@ -34,7 +36,13 @@ const routes = [
         path: 'books',
         name: 'Books',
         component: Books
+      },
+      {
+        path: 'publisher',
+        name: 'Publisher',
+        component: Publisher
       }
+
     ]
   }
 ]

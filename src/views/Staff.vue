@@ -8,7 +8,7 @@
                     <input class="mx-4 w-full border rounded-md px-4 py-2" type="text" placeholder="Search">
                 </div>
                 <div class="font-mono text-[18px]">
-                    Staff Manage
+                    Danh sách nhân viên
                 </div>
                 <div class="flex items-center pr-4">
 
@@ -24,11 +24,8 @@
             </div>
             <router-view />
         </div>
-        <div class="mt-2 ml-2 mb-4 text-[20px] font-mono font-bold">
-            Danh sách nhân viên
-        </div>
 
-        <div class="ml-4 mr-4 bg-white rounded-md shadow-md">
+        <div class="mt-4 ml-4 mr-4 bg-white rounded-md shadow-md">
 
             <table id="staffTable" class="display">
                 <thead>

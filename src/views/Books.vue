@@ -4,152 +4,154 @@ import 'datatables.net'; // Import DataTable.js
 import 'datatables.net-bs4/css/dataTables.bootstrap4.min.css';
 import api from "../services/api.services";
 export default {
-
-    data() {
-        return {
-            errorMessage: null,
-            successMessage: null,
-            formData: {
-                MaSach: "",
-                TenSach: "",
-                SoQuyen: 0,
-                NamXuatBan: "",
-                MaNXB: "",
-                TacGia: "",
-                HinhAnh: "",
-                DonGia: 0
-            },
-            isDataTableInitialized: false,
-
-        };
-    },
-    mounted() {
-        this.fetchBooks();
-    //     $('#bookTable').on('click', '.delete-button', (event) => {
-    //     const id = $(event.currentTarget).data('id');
-    //     this.deleteBook(id);
-    // });
-    },
-
-    methods: {
-        fetchBooks() {
-            api.get('/books/getAll')
-                .then(response => {
-                    const booksData = response.data;
-                    console.log(response.data);
-                    this.populateTable(booksData);
-                })
-                .catch(error => {
-                    console.error('Error fetching books:', error);
-                });
-        },
-        populateTable(data) {
-            if (!this.isDataTableInitialized) {
-                this.bookTable = $('#bookTable').DataTable({
-                    responsive: true,
-                    data: data.data,
-                    columns: [
-                        { data: 'MaSach' },
-                        { data: 'TenSach' },
-                        { data: 'SoQuyen' },
-                        { data: 'NamXuatBan' },
-                        { data: 'MaNXB' },
-                        { data: 'DonGia' },
-                        { data: 'TacGia' },
-                        {
-                            data: '_id',
-                            render: function (data, type, row) {
-                                return `<button
-    class="bg-red-500 text-white rounded-md mr-1 p-2 hover:bg-blue-500 delete-button edit-button"
-    v-bind:data-id="${data}"
-    @click="deleteBook(${data})"
->Xoá</button>`;
-                            }
-                        }
-                    ],
-                    createdRow: (row, data, dataIndex) => {
-        $(row).find('.edit-button').on('click', () => {
-          this.deleteBook(data._id);
+  data() {
+    return {
+      errorMessage: null,
+      successMessage: null,
+      formData: {
+        MaSach: "",
+        TenSach: "",
+        SoQuyen: 0,
+        NamXuatBan: "",
+        MaNXB: "",
+        TacGia: "",
+        HinhAnh: "",
+        DonGia: 0
+      },
+      isBookDataTableInitialized: false,
+      isBorrowedDataTableInitialized: false,
+      bookTable: null,
+      borrowedTable: null,
+      borrowedBooks: []
+    };
+  },
+  mounted() {
+    this.fetchBooks();
+    this.fetchBorrowedBooks();
+  },
+  methods: {
+    fetchBooks() {
+      api.get('/books/getAll')
+        .then(response => {
+          const booksData = response.data;
+          this.populateBookTable(booksData);
+        })
+        .catch(error => {
+          console.error('Error fetching books:', error);
         });
+    },
+    populateBookTable(data) {
+      if (!this.isBookDataTableInitialized) {
+        this.bookTable = $('#bookTable').DataTable({
+          responsive: true,
+          data: data.data,
+          columns: [
+            { data: 'MaSach' },
+            { data: 'TenSach' },
+            { data: 'SoQuyen' },
+            { data: 'NamXuatBan' },
+            { data: 'MaNXB' },
+            { data: 'DonGia' },
+            { data: 'TacGia' },
+            {
+              data: '_id',
+              render: function (data, type, row) {
+                return `<button
+                  class="bg-red-500 text-white rounded-md mr-1 p-2 hover:bg-blue-500 delete-button edit-button"
+                  v-bind:data-id="${data}"
+                  @click="deleteBook(${data})"
+                >Xoá</button>`;
+              }
+            }
+          ],
+          createdRow: (row, data, dataIndex) => {
+            $(row).find('.edit-button').on('click', () => {
+              this.deleteBook(data._id);
+            });
+          }
+        });
+        this.isBookDataTableInitialized = true;
+      } else {
+        this.bookTable.clear().rows.add(data.data).draw();
       }
-                });
-                this.isDataTableInitialized = true;
-            }
-        },
-        addBook() {
-            api.post('/books/create', this.formData)
-                .then(response => {
-                    // Handle success message and refresh DataTable
-                    this.successMessage = "Thêm sách thành công!";
-                    this.fetchBooks();
-                    this.formData = {
-                        MaSach: "",
-                        TenSach: "",
-                        SoQuyen: 0,
-                        NamXuatBan: "",
-                        MaNXB: "",
-                        TacGia: "",
-                        HinhAnh: "",
-                        DonGia: 0
-                    };
-                    if (this.isDataTableInitialized) {
-                        this.bookTable.clear().rows.add(response.data.data).draw();
-                    }
-                })
-                .catch(error => {
-                    // Handle error message
-                    this.errorMessage = "Lỗi khi thêm sách: " + error.message;
-                });
-        },
-        deleteBook(_id) {
-            console.log(_id);
-            if (!_id) {
-                console.error('ID không hợp lệ.');
-                return;
-            }
-
-            console.log(_id);
-            // Gửi yêu cầu xóa đến API với _id của sách cần xóa trong params
-            api.delete(`/books/delete/${_id}`)
-                .then(response => {
-                    // Xử lý khi xóa thành công
-                    console.log('Sách đã được xóa:', response.data);
-                    this.fetchBooks();
-                    // Sau khi xóa thành công, làm mới DataTable để cập nhật danh sách sách
-                    if (this.isDataTableInitialized) {
-                        this.bookTable.clear().rows.add(response.data.data).draw();
-                    }
-                })
-                .catch(error => {
-                    // Xử lý khi xóa không thành công
-                    console.error('Lỗi khi xóa sách:', error);
-                    this.errorMessage = "Lỗi khi xóa sách: " + error.message;
-                });
-        },
-
-        updateBook() {
-            api.put(`/books/update`, this.formData)
-                .then(response => {
-                    // Xử lý khi cập nhật thành công
-                    this.successMessage = "Cập nhật sách thành công!";
-                    this.fetchBooks(); // Làm mới danh sách sách sau khi cập nhật
-                    this.formData = {
-                        MaSach: "",
-                        TenSach: "",
-                        SoQuyen: 0,
-                        NamXuatBan: "",
-                        MaNXB: "",
-                        TacGia: "",
-                        HinhAnh: "",
-                        DonGia: 0
-                    };
-                })
-                .catch(error => {
-                    // Xử lý khi cập nhật không thành công
-                    this.errorMessage = "Lỗi khi cập nhật sách: " + error.message;
-                });
-        },
+    },
+    addBook() {
+      api.post('/books/create', this.formData)
+        .then(response => {
+          this.successMessage = "Thêm sách thành công!";
+          this.fetchBooks();
+          this.formData = {
+            MaSach: "",
+            TenSach: "",
+            SoQuyen: 0,
+            NamXuatBan: "",
+            MaNXB: "",
+            TacGia: "",
+            HinhAnh: "",
+            DonGia: 0
+          };
+        })
+        .catch(error => {
+          this.errorMessage = "Lỗi khi thêm sách: " + error.message;
+        });
+    },
+    deleteBook(_id) {
+      api.delete(`/books/delete/${_id}`)
+        .then(response => {
+          this.fetchBooks();
+        })
+        .catch(error => {
+          this.errorMessage = "Lỗi khi xóa sách: " + error.message;
+        });
+    },
+    updateBook() {
+      api.put(`/books/update`, this.formData)
+        .then(response => {
+          this.successMessage = "Cập nhật sách thành công!";
+          this.fetchBooks();
+          this.formData = {
+            MaSach: "",
+            TenSach: "",
+            SoQuyen: 0,
+            NamXuatBan: "",
+            MaNXB: "",
+            TacGia: "",
+            HinhAnh: "",
+            DonGia: 0
+          };
+        })
+        .catch(error => {
+          this.errorMessage = "Lỗi khi cập nhật sách: " + error.message;
+        });
+    },
+    fetchBorrowedBooks() {
+      api.get('/borrow/getAll')
+        .then(response => {
+          this.borrowedBooks = response.data.data;
+          this.populateBorrowedTable(this.borrowedBooks);
+        })
+        .catch(error => {
+          console.error('Error fetching borrowed books:', error);
+        });
+    },
+    populateBorrowedTable(data) {
+      if (!this.isBorrowedDataTableInitialized) {
+        this.borrowedTable = $('#borrowedTable').DataTable({
+          responsive: true,
+          data: data,
+          columns: [
+            { data: 'MaDocGia' },
+            { data: 'MaSach' },
+            { data: 'NgayMuon' },
+            { data: 'NgayTra' }
+          ]
+        });
+        this.isBorrowedDataTableInitialized = true;
+      } else {
+        this.borrowedTable.clear().rows.add(data).draw();
+      }
     }
+  }
 }
 </script>
 <template>
@@ -162,7 +164,7 @@ export default {
                     <input class="mx-4 w-full border rounded-md px-4 py-2" type="text" placeholder="Search">
                 </div>
                 <div class="font-mono text-[18px]">
-                    Books Manage
+                   Danh sách sách
                 </div>
                 <div class="flex items-center pr-4">
 
@@ -178,10 +180,9 @@ export default {
             </div>
             <router-view />
         </div>
-        <div class="mt-2 ml-2 mb-4 text-[20px] font-mono font-bold">
-            Danh sách sách
-        </div>
-        <div class="ml-4 mr-4 bg-white rounded-md shadow-md">
+
+        
+        <div class="mt-4 ml-4 mr-4 bg-white rounded-md shadow-md">
 
             <table id="bookTable" class="display">
                 <thead>
@@ -202,6 +203,26 @@ export default {
             </table>
 
         </div>
+
+        <div class="mt-6 ml-2 mb-4 text-[20px] font-mono font-bold">
+      Danh sách mượn sách
+    </div>
+
+    <div class="mt-4 ml-4 mr-4 bg-white rounded-md shadow-md">
+      <table id="borrowedTable" class="display">
+        <thead>
+          <tr>
+            <th>Mã độc giả</th>
+            <th>Mã sách</th>
+            <th>Ngày mượn</th>
+            <th>Ngày trả</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Data will be populated here -->
+        </tbody>
+      </table>
+    </div>
 
         <div class="mt-6 ml-2 mb-4 text-[20px] font-mono font-bold">
             Chức năng
