@@ -28,8 +28,32 @@ export default {
   mounted() {
     this.fetchBooks();
     this.fetchBorrowedBooks();
+    this.attachEventListeners();
   },
   methods: {
+    attachEventListeners() {
+    const self = this;
+    $('#borrowedTable').on('click', 'button', function () {
+      const bookId = $(this).data('id');
+      self.approveBorrowedBook(bookId);
+    });
+  },
+    approveBorrowedBook(bookId) {
+            const requestData = {
+                _id: bookId,
+                TrangThai: true 
+            };
+
+            api.post('/borrow/duyet', requestData)
+                .then(response => {
+                    this.successMessageDuyet = "Duyệt sách thành công!";
+                    this.fetchBorrowedBooks(); // Cập nhật lại danh sách mượn sách
+                })
+                .catch(error => {
+                    this.errorMessageDuyet = "Lỗi khi duyệt sách: " + error.message;
+                });
+        },
+        // Các phương thức khác của component Vue.js
     fetchBooks() {
       api.get('/books/getAll')
         .then(response => {
@@ -143,7 +167,28 @@ export default {
             { data: 'MaDocGia' },
             { data: 'MaSach' },
             { data: 'NgayMuon' },
-            { data: 'NgayTra' }
+            { data: 'NgayTra' },
+            {
+  data: 'TrangThai',
+  render: function (data, type, row) {
+    if (data) {
+      return `<span class="text-green-500">Duyệt</span>`;
+    } else {
+      return `<span class="text-red-500">Chưa duyệt</span>`;
+    }
+  }
+},
+            {
+  data: '_id',
+  render: function (data, type, row) {
+    return `<button
+                class="bg-green-500 text-white rounded-md mr-1 p-2 hover:bg-blue-500"
+                data-id="${data}"
+            >
+                Duyệt
+            </button>`;
+  }
+}
           ]
         });
         this.isBorrowedDataTableInitialized = true;
@@ -207,7 +252,12 @@ export default {
         <div class="mt-6 ml-2 mb-4 text-[20px] font-mono font-bold">
       Danh sách mượn sách
     </div>
-
+    <div v-if="errorMessageDuyet" class="text-red-600 font-semibold">
+                    {{ errorMessageDuyet }}
+                </div>
+                <div v-if="successMessageDuyet" class="text-green-600 font-semibold">
+                    {{ successMessageDuyet }}
+                </div>
     <div class="mt-4 ml-4 mr-4 bg-white rounded-md shadow-md">
       <table id="borrowedTable" class="display">
         <thead>
@@ -216,10 +266,11 @@ export default {
             <th>Mã sách</th>
             <th>Ngày mượn</th>
             <th>Ngày trả</th>
+            <th>Trạng thái</th>
+            <th>Thao tác</th>
           </tr>
         </thead>
         <tbody>
-          <!-- Data will be populated here -->
         </tbody>
       </table>
     </div>
